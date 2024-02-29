@@ -16,6 +16,7 @@ const addMsgToRequest = function (req, res, next) {
   if(users) {
     req.users = users;
     next();
+    // add users to req.users at every request
   }
   else {
     return res.json({
@@ -31,6 +32,7 @@ app.use(
 app.use('/read/usernames', addMsgToRequest);
 
 app.get('/read/usernames', (req, res) => {
+  console.log(req.users)
   let usernames = req.users.map(function(user) {
     return {id: user.id, username: user.username};
   });
@@ -53,4 +55,18 @@ app.post('/write/adduser', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
+})
+
+app.use('/read/username/:name', addMsgToRequest);
+app.get('/read/username/:name', (req, res) => {
+  let uname = req.params.name;
+  let userData = req.users.filter((user) => user["username"] === uname);
+  if(userData.length != 0) {
+    res.send(userData);
+  }
+  else {
+    res.json({
+      error: {message: 'users not found', status: 404}
+  });
+  }
 })
